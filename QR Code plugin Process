@@ -1,0 +1,6 @@
+1. Zip File Download 
+2. Unzip
+3. Plug-in Process 
+   Share Component 
+Plug-in :Import src/item_type_plugin_com_jannavratil_apex_qr.sql 
+Static Application Files : src/qrcode.min.js
