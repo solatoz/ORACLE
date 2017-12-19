@@ -1,0 +1,9 @@
+select HISTORY_ID,
+       VISIT_DATE,
+       CLIENTS_ID,
+       HISTORY_MEMO,
+       HISTORY_SUPPLY,
+       HISTORY_SERVICE,
+       TOTAL_$
+  from HISTORY
+order by VISIT_DATE ASC;
