@@ -1,0 +1,2 @@
+> sqlplus / as sysdba
+sql> alter user system identified by "newpassword" account unlock;
