@@ -1,0 +1,5 @@
+imp file=c:haiwork_0410.dmp fromuser=haiwork touser=jongwork ignore=y commit=y
+
+
+
+exp file=c:haiwork_0410.dmp owner=haiwork compress =y
