@@ -1,0 +1,133 @@
+Installation
+Change directory to the directory holding the unzipped APEX software.
+
+$ cd /home/oracle/apex
+Connect to SQL*Plus as the SYS user and run the "apexins.sql" script, specifying the relevant tablespace names and image URL.
+
+SQL> CONN sys@pdb1 AS SYSDBA
+SQL> -- @apexins.sql tablespace_apex tablespace_files tablespace_temp images
+SQL> 
+SQL> @apexins.sql APEX APEX TEMP /i/
+Once complete, change the admin password by running the "apxchpwd.sql" scripts as the SYS user.
+
+SQL> CONN sys@pdb1 AS SYSDBA
+SQL> @apxchpwd.sql
+If you want to add the user silently, you could run the following code, specifying the required password and email.
+
+BEGIN
+    APEX_UTIL.set_security_group_id( 10 );
+    
+    APEX_UTIL.create_user(
+        p_user_name       => 'ADMIN',
+        p_email_address   => 'me@example.com',
+        p_web_password    => 'PutPasswordHere',
+        p_developer_privs => 'ADMIN' );
+        
+    APEX_UTIL.set_security_group_id( null );
+    COMMIT;
+END;
+/
+Create the APEX_LISTENER and APEX_REST_PUBLIC_USER users by running the "apex_rest_config.sql" script.
+
+SQL> CONN sys@pdb1 AS SYSDBA
+SQL> @apex_rest_config.sql
+If you want to add these users silently, you can specify the passwords as parameters to the script.
+
+SQL> CONN sys@pdb1 AS SYSDBA
+SQL> @apex_rest_config.sql ApexPassword1 ApexPassword2
+Embedded PL/SQL Gateway (EPG) Configuration
+If you want to use the Embedded PL/SQL Gateway (EPG) to front APEX, you can follow the instructions here. This is used for both the first installation and upgrades.
+
+ With the exception of setting the port to a non-zero value, this step is required for ORDS setup too.
+
+Run the "apex_epg_config.sql" script, passing in the base directory of the installation software as a parameter.
+
+SQL> CONN sys@pdb1 AS SYSDBA
+SQL> @apex_epg_config.sql /home/oracle
+Unlock the ANONYMOUS account.
+
+SQL> ALTER USER ANONYMOUS ACCOUNT UNLOCK;
+Check the port setting for XML DB Protocol Server.
+
+SQL> SELECT DBMS_XDB.gethttpport FROM DUAL;
+
+GETHTTPPORT
+-----------
+          0
+
+1 row selected.
+
+SQL>
+If it is set to "0", you will need to set it to a non-zero value to enable it.
+
+SQL> EXEC DBMS_XDB.sethttpport(8080);
+
+PL/SQL procedure successfully completed.
+
+SQL>
+APEX should now be available from a URL like "http://machine:port/apex".
+
+Oracle HTTP Server (OHS) Configuration
+If you want to use Oracle HTTP Server (OHS) to front APEX, you can follow the instructions here.
+
+Change the password and unlock the APEX_PUBLIC_USER account. This will be used for any Database Access Descriptors (DADs).
+
+SQL> ALTER USER APEX_PUBLIC_USER IDENTIFIED BY myPassword ACCOUNT UNLOCK;
+If you don't want the password to expire you will need to create a new profile with password expiration disabled and assign it to the user.
+
+Create a DAD in the OHS:
+
+Log into EM (http://server:port/em)
+From the tree select "Farm_DomainName > Web Tier > ohs1"
+On the resulting page select "Oracle HTTP Server > Administration > Advanced Configuration"
+From the dropdown list slect "dads.conf" and click the "Go" button.
+Edit the "dads.conf" file, adding an entry like that shown below, then click the "Apply" button.
+<Location /apex>
+   Order deny,allow
+   PlsqlDocumentPath docs
+   AllowOverride None
+   PlsqlDocumentProcedure         wwv_flow_file_mgr.process_download
+   PlsqlDatabaseConnectString     pdb1 TNSFormat
+   PlsqlNLSLanguage               AMERICAN_AMERICA.AL32UTF8
+   PlsqlAuthenticationMode        Basic
+   SetHandler                     pls_handler
+   PlsqlDocumentTablename         wwv_flow_file_objects$
+   PlsqlDatabaseUsername          APEX_PUBLIC_USER
+   PlsqlDefaultPage               apex
+   PlsqlDatabasePassword          myPassword
+   PlsqlRequestValidationFunction wwv_flow_epg_include_modules.authorize
+   PlsqlPathAlias                 r
+   PlsqlPathAliasProcedure        wwv_flow.resolve_friendly_url
+   Allow from all
+</Location>
+Select the "Oracle HTTP Server > Control > Restart" option.
+Click the resulting "Restart" button.
+Once restarted, click the "Close" button.
+Alternatively, edit the "dads.conf" file directly. For the OHS that comes with Forms and Reports Services, this is located here "$FR_INST/config/OHS/ohs1/mod_plsql/dads.conf". Once amended, remember to restart the HTTP server.
+
+$ $FR_INST/bin/opmnctl restartproc process-type=OHS
+Copy the APEX images to your Oracle HTTP Server.
+
+$ cp -R /tmp/apex/images $FR_INST/config/OHS/ohs1/htdocs/apex_images
+Make them available from the "/i/" alias by adding the following alias to the virtual host defined in the "ssl.conf" or "httpd.conf" file in the "$FR_INST/config/OHS/ohs1" directory.
+
+Alias /i/ "/u01/app/oracle/middleware/FR_inst/config/OHS/ohs1/htdocs/apex_images/"
+APEX should now be available from a URL like "http://machine:port/apex".
+
+Oracle REST Data Services (ORDS) Configuration
+If you want to use Oracle REST Data Services (ORDS) to front APEX, you can follow the instructions here.
+
+Oracle REST Data Services (ORDS) 3.0 and 17.x Installation on Tomcat 7, 8 and 9
+Network ACLS
+If your APEX installation needs to contact other servers on the network, you will need to create the appropriate ACLs to allow account to the network services. This is discussed here.
+
+For more information see:
+
+Application Express Documentation Release 5.1
+Application Express Documentation Release 5.0
+Oracle Application Express Installation Guide Release 5.0
+Oracle Application Express (APEX) 4.2 Installation
+Oracle Application Express (APEX) Patches
+Fine-Grained Access to Network Services in Oracle Database 11g Release 1
+Multitenant : Uninstall APEX from the CDB in Oracle Database 12c Release 1 (12.1)
+Oracle REST Data Services (ORDS) 3.0 and 17.x Installation on Tomcat 7, 8 and 9
