@@ -1,0 +1,42 @@
+Oracle Database 11 g Express Edition (Oracle XE) includes Oracle Application Express release 4.2.6.00.03. It is strongly recommended that you upgrade to the latest release of Oracle Application Express to take advantage of all the latest features.
+
+How to Upgrade
+To install the latest version of Oracle Application Express in your Oracle Database XE, first download the latest version of Application Express from the Oracle Technology Network.
+
+1. Unzip the downloadloaded zip file:
+
+Linux: Unzip <filename>.zip
+Windows: Double click <filename>.zip in Windows Explorer
+[Note: You should keep the directory tree where you unzip the files short and not under directories that contain spaces. For example, within Windows unzip to C:\_apex.]
+2. Change your working directory to apex.
+
+3. Start SQL*Plus and connect to the Oracle XE database:
+
+Linux:
+        $ sqlplus /nolog
+        SQL> CONNECT SYS as SYSDBA
+        Enter Password:	SYS_Password
+      
+Windows:
+        {Command prompt} C:\apex> sqlplus /nolog
+        SQL> CONNECT SYS as SYSDBA
+        Enter Password:	SYS_Password
+		  
+4. Install Application Express:
+
+SQL> @apexins SYSAUX SYSAUX TEMP /i/
+5. Log back into SQL*Plus (as above) and configure the Embedded PL/SQL Gateway (EPG):
+
+SQL> @apex_epg_config.sql APEX_HOME
+[Note: APEX_HOME is the directory you specified when unzipping the file. For example, with Windows 'C:\'.]
+6. Upgrade Application Express password:
+
+        SQL> @apxchpwd
+
+        Enter password for Application Express ADMIN account.
+      
+7. In a Web browser, navigate to the Oracle Application Express Administration Services application:
+
+http://localhost:8080/apex/apex_admin
+In Username, enter ADMIN
+In Password, enter the password entered in Step 6
