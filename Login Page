@@ -1,0 +1,10 @@
+span.t-Login-logo {
+background-image: url(#APP_IMAGES#gp64.png);
+background-size: cover;
+}
+
+.t-PageBody--login .t-Body{
+background: url(#APP_IMAGES#world2.png);
+background-repeat: no-repeat;
+background-size: cover;
+}
